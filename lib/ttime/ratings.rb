@@ -133,18 +133,30 @@ module TTime
           unless already_loaded_ratings.include? rating_name
             already_loaded_ratings << rating_name
             log.info "Loading rating #{rating}"
-            require rating
+
+            # IgKh: use an absolute path, because a relative path gives
+            # problems with ruby 1.9
+            require File.expand_path(rating)
           end
         end
       end
     end
 
     def Ratings.get_ratings
-      rating_class_names = Ratings.constants - \
-        [ "AbstractRating", "RatingPathCandidates" ]
+      rating_class_names = Ratings.constants
+
+      # IgKh: In 1.9 Module#constants seems to return symbols but the rdoc
+      # insists it returns strings, so I'll test it here.
+      constants_to_remove = [:AbstractRating, :RatingPathCandidates]
+
+      if rating_class_names[0].kind_of? Symbol then
+          rating_class_names -= constants_to_remove
+      elsif rating_class_names[0].kind_of? String then
+          rating_class_names -= constants_to_remove.collect { |it| it.to_s }
+      end
 
       rating_classes = rating_class_names.collect do |c|
-        Ratings.module_eval(c)
+        Ratings.module_eval(c.to_s)
       end
 
       rating_classes.collect do |c|

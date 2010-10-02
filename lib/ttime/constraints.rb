@@ -126,18 +126,30 @@ module TTime
           unless already_loaded_constraints.include? constraint_name
             already_loaded_constraints << constraint_name
             log.info { "Loading constraint #{constraint}" }
-            require constraint
+
+            # IgKh: use an absolute path, because a relative path gives
+            # problems with ruby 1.9
+            require File.expand_path(constraint)
           end
         end
       end
     end
 
     def Constraints.get_constraints
-      constraint_class_names = Constraints.constants - \
-        [ "AbstractConstraint", "ConstraintPathCandidates" ]
+      constraint_class_names = Constraints.constants
+
+      # IgKh: In 1.9 Module#constants seems to return symbols but the rdoc
+      # insists it returns strings, so I'll test it here. Dynamic typing sucks :(
+      constants_to_remove = [:AbstractConstraint, :ConstraintPathCandidates]
+
+      if constraint_class_names[0].kind_of? Symbol then
+        constraint_class_names -= constants_to_remove
+      elsif constraint_class_names[0].kind_of? String then
+        constraint_class_names -= constants_to_remove.collect { |it| it.to_s }
+      end
 
       constraint_classes = constraint_class_names.collect do |c|
-        Constraints.module_eval(c)
+        Constraints.module_eval(c.to_s)
       end
 
       constraint_classes.collect do |c|

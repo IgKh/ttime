@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 require 'ttime/logic/times'
 
@@ -31,7 +32,7 @@ module TTime
         group.course
       end
     end
-  
+
     class Group
       attr_accessor :number, :lecturer, :type, :events, :course, :description
       def initialize
@@ -42,11 +43,11 @@ module TTime
       def inspect
         "#<Group number=#@number>"
       end
-  
+
       def type_is? (x)
         type == x.to_sym
       end
-  
+
       def time_as_text
         self.events.collect do |e|
           human_day = Day::numeric_to_human(e.day)

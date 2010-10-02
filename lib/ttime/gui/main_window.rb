@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'singleton'
 
 require 'ttime/data'
@@ -45,7 +46,7 @@ module TTime
 
     DefaultEventDataMembers = [ :course_name, :group_number, :place ]
 
-    AvailableCoursesColumns = [ 
+    AvailableCoursesColumns = [
       [:name, String],
       [:number, String],
       [:course, Logic::Course],
@@ -314,7 +315,7 @@ module TTime
       def on_available_course_selection
         course = currently_addable_course
 
-        @ui["btn_add_course"].sensitive = 
+        @ui["btn_add_course"].sensitive =
           course ? true : false
 
         set_course_info course
@@ -1047,7 +1048,7 @@ module TTime
         constraints_notebook.border_width = 5
 
         notebook = @ui["notebook"]
-        notebook.append_page constraints_notebook, 
+        notebook.append_page constraints_notebook,
           Gtk::Label.new(_("Constraints"))
         notebook.show_all
       end
@@ -1083,7 +1084,7 @@ module TTime
         ratings_notebook.border_width = 5
 
         notebook = @ui["notebook"]
-        notebook.append_page ratings_notebook, 
+        notebook.append_page ratings_notebook,
           Gtk::Label.new(_("Schedule ratings"))
         notebook.show_all
       end

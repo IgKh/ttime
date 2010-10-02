@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
 require 'iconv'
 require 'ttime/logic/faculty'
 require 'ttime/gettext_settings'
 require 'ttime/logging'
 
-$KCODE='u'
-require 'jcode'
+# Standard unicode support activation (built-in in 1.9)
+ver = RUBY_VERSION.split('.').collect { |p| p.to_i }
+if ver[0] <= 1 and ver[1] < 9 then
+  require 'jcode'
+  $KCODE = 'u'
+end
 
 class String
   def u_leftchop! n
@@ -214,9 +219,9 @@ module TTime
 
         state = :start
         #puts contents.body
-        contents.body.each do |line|
+        contents.body.lines.each do |line|
           case state
-          when :start:
+          when :start then
             if line[3] != '-'
               if m=/\| מורה  אחראי :(.*?) *\|/.match(line)
                 course.lecturer_in_charge = m[1].strip.squeeze(" ")
@@ -228,7 +233,7 @@ module TTime
                 state = :thing
               end
             end
-          when :thing:
+          when :thing then
             line.strip!
             if line =~ /----/
               #this should not happen
@@ -246,7 +251,7 @@ module TTime
               add_event_to_group(grp, m[3])
               state = :details
             end
-          when :details:
+          when :details then
             if line !~ /:/
               if line =~ /\| +\|/ || line =~ /\+\+\+\+\+\+/ || line =~ /----/
                 course.groups << grp unless grp.events.empty?
@@ -378,11 +383,25 @@ module TTime
       def convert_test_date(s)
         israeli_date = s.split(' ')[2].reverse
 
-        american_date = israeli_date.gsub(/^(\d\d)\/(\d\d)\/(\d\d)/,'\2/\1/\3')
+        # IgKh: In 1.9 Date#parse seems to be locale aware, so feeding it with
+        # an American style date in a he_IL locale can cause an exception
+        # if the date is invalid in the DD/MM/YY format.
+        #
+        # We'll parse the date string ourselves to be locale independent
+        if israeli_date =~ /^(\d\d)\/(\d\d)\/(\d\d)/ then
+          # TODO: This will only work until 2068, as years are given in two
+          # digits. Let's hope REPY doesn't survive until then.
+          year = $3.to_i
+          if year >= 69 then
+            year += 1900
+          else
+            year += 2000
+          end
 
-        # TODO: This will only work until 2068, as years are given in two
-        # digits. Let's hope REPY doesn't survive until then.
-        Date.parse(american_date, true)
+          Date.new(year, $2.to_i, $1.to_i)
+        else
+          Date.new
+        end
       end
 
     end

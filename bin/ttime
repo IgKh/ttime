@@ -42,9 +42,12 @@ rescue LoadError
   def _ s; s; end
 end
 
-# Standard unicode support activation
-require 'jcode'
-$KCODE = 'u'
+# Standard unicode support activation (built-in in 1.9)
+ver = RUBY_VERSION.split('.').collect { |p| p.to_i }
+if ver[0] <= 1 and ver[1] < 9 then
+  require 'jcode'
+  $KCODE = 'u'
+end
 
 def run_gui
   require 'ttime/gui/main_window'
